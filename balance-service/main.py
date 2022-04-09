@@ -34,29 +34,15 @@ def generate500response(error: str) -> dict:
 
 
 class Balance(Resource):
-    def get(self, location_id: str = None, product_id: str = None):
+    def get(self):
         """RESTful GET method"""
         try:
-            filters = {}
-
-            # Apply filters if provided for querying redis/database
-            if product_id:
-                filters.update({'product_id': product_id})
-            if location_id:
-                filters.update({'location_id': location_id})
-
-            result_docs = list(collection.find(filters))
+            # Get all documents in the collection
+            result_docs = list(collection.find())
 
             # Convert to JSON
             result = json.loads(json.dumps(
                 result_docs, default=json_util.default))
-
-            if filters and not len(result):
-                return {
-                    "status": 404,
-                    "timestamp": getISOtimestamp(),
-                    "message": "Resource Not Found",
-                }, 404
 
             return {
                 "status": 200,
@@ -67,14 +53,14 @@ class Balance(Resource):
             }, 200
 
         except Exception as error:
-            res = generate500response(error)
+            res = generate500response(str(error))
             return res, 500
 
 
 app = Flask(__name__)
 api = Api(app)
 
-api.add_resource(Balance, '/', '/<string:location_id>', '/<string:product_id>')
+api.add_resource(Balance, '/')
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
