@@ -64,7 +64,7 @@ class Movements(Resource):
             }, 200
 
         except Exception as error:
-            res = generate500response(error)
+            res = generate500response(str(error))
             return res, 500
 
     def post(self):
@@ -96,12 +96,14 @@ class Movements(Resource):
                     "quantity must be of type integer.")
                 return response, 400
 
-            # Insert single document from user POST body
+            # Insert single document from user POST body into movement collection
             result = collection.insert_one(data)
 
             if not result.acknowledged:
-                response = generate500response("Database insertion failed.")
+                response = generate500response("Database insertion failed while creating a movement record.")
                 return response, 500
+
+            # TODO: update balance DB
 
             return {
                 "status": 201,
@@ -111,7 +113,7 @@ class Movements(Resource):
             }, 201
 
         except Exception as error:
-            response = generate500response(error)
+            response = generate500response(str(error))
             return response, 500
 
 
