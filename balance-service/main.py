@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 from bson import json_util
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource
 
 from database_connector import collection
@@ -45,12 +45,50 @@ class Balance(Resource):
                 result_docs, default=json_util.default))
 
             return {
-                "status": 200,
-                "message": "Success",
-                "timestamp": getISOtimestamp(),
-                "data": result,
-                "records_count": len(result)
-            }, 200
+                       "status": 200,
+                       "message": "Success",
+                       "timestamp": getISOtimestamp(),
+                       "data": result,
+                       "records_count": len(result)
+                   }, 200
+
+        except Exception as error:
+            res = generate500response(str(error))
+            return res, 500
+
+    def post(self):
+        """RESTful POST method"""
+        try:
+            data = request.json()
+
+            product_id = data['product']
+            location_id = data['location']
+            qty = data['qty']
+
+            if not product_id:
+                res = generate400response("product_id key required.")
+                return res, 400
+
+            if not location_id:
+                res = generate400response("location_id key required.")
+                return res, 400
+
+            if not int(qty):
+                res = generate400response("qty is required and must be greater than zero.")
+                return res, 400
+
+            # Insert single document from POST body
+            result = collection.insert_one(data)
+
+            if not result.acknowledged:
+                response = generate500response("Database insertion failed.")
+                return response, 500
+
+            return {
+                       "status": 201,
+                       "message": "Success",
+                       "timestamp": getISOtimestamp()
+                   }, 201
 
         except Exception as error:
             res = generate500response(str(error))
