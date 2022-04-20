@@ -1,0 +1,29 @@
+version: '3'
+services:
+  balance-service:
+    build: ./balance-service
+    volumes:
+      - ./balance-service:/usr/src/app
+    ports:
+      - "8000:8080"
+
+  product-service:
+    build: ./product-service
+    volumes:
+      - ./product-service:/usr/src/app
+    ports:
+      - "8001:8080"
+
+  location-service:
+    build: ./location-service
+    volumes:
+      - ./location-service:/usr/src/app
+    ports:
+      - "8002:8080"
+
+  movement-service:
+    build: ./movement-service
+    volumes:
+      - ./movement-service:/usr/src/app
+    ports:
+      - "8003:8080"
