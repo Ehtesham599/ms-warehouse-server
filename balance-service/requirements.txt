@@ -1,6 +1,7 @@
 aniso8601==8.0.0
 Flask==2.1.0
 Flask-RESTful==0.3.9
+Jinja2==3.1.1
 pytz==2020.1
 six==1.15.0
 Werkzeug==2.1.1
