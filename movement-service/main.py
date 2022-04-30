@@ -5,6 +5,9 @@ from datetime import datetime
 from database_connector import collection
 import json
 from bson import json_util, ObjectId
+import pika
+
+QUEUE_NAME = 'movement_log'
 
 
 def getISOtimestamp() -> str:
@@ -31,6 +34,21 @@ def generate500response(error: str) -> dict:
     }
 
 
+def publish_message(message: dict, queue_name: str) -> None:
+    """A function that publishes a message body of type dict to a rabbitmq queue"""
+
+    # Setup connection with rabbitmq service name defined in docker compose file
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+    channel = connection.channel()
+
+    channel.queue_declare(queue=queue_name)
+
+    channel.basic_publish(exchange='', routing_key=queue_name, body=message)
+    logging.info(f"Sent message to {queue_name} queue.\n Message body: \n{message}")
+
+    connection.close()
+
+
 class Movements(Resource):
     def get(self, movement_id: str = None):
         """RESTful GET method"""
@@ -50,18 +68,18 @@ class Movements(Resource):
             # Give 404 response if no records found when applied filters
             if filters and not len(result):
                 return {
-                    "status": 404,
-                    "timestamp": getISOtimestamp(),
-                    "message": "Resource Not Found",
-                }, 404
+                           "status": 404,
+                           "timestamp": getISOtimestamp(),
+                           "message": "Resource Not Found",
+                       }, 404
 
             return {
-                "status": 200,
-                "message": "Success",
-                "timestamp": getISOtimestamp(),
-                "data": result,
-                "records_count": len(result)
-            }, 200
+                       "status": 200,
+                       "message": "Success",
+                       "timestamp": getISOtimestamp(),
+                       "data": result,
+                       "records_count": len(result)
+                   }, 200
 
         except Exception as error:
             res = generate500response(str(error))
@@ -103,14 +121,14 @@ class Movements(Resource):
                 response = generate500response("Database insertion failed while creating a movement record.")
                 return response, 500
 
-            # TODO: update balance DB
+            publish_message(data, QUEUE_NAME)
 
             return {
-                "status": 201,
-                "message": "Success",
-                "timestamp": getISOtimestamp(),
-                "result": f"movement with id: {result.inserted_id} created.",
-            }, 201
+                       "status": 201,
+                       "message": "Success",
+                       "timestamp": getISOtimestamp(),
+                       "result": f"movement with id: {result.inserted_id} created.",
+                   }, 201
 
         except Exception as error:
             response = generate500response(str(error))
