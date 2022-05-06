@@ -34,6 +34,30 @@ def generate500response(error: str) -> dict:
     }
 
 
+def location_exists(location_id: str) -> bool:
+    """This function checks if location id exists by making a GET request to the location service."""
+    import requests
+    URL = f"http://location-service/{location_id}"
+
+    res = requests.get(URL)
+    if res.status_code != 200:
+        return False
+
+    return True
+
+
+def product_exists(product_id: str) -> bool:
+    """This function checks if product id exists by making a GET request to the product service."""
+    import requests
+    URL = f"http://product-service/{product_id}"
+
+    res = requests.get(URL)
+    if res.status_code != 200:
+        return False
+
+    return True
+
+
 def publish_message(message: dict, queue_name: str) -> None:
     """A function that publishes a message body of type dict to a rabbitmq queue"""
 
@@ -99,6 +123,18 @@ class Movements(Resource):
                 response = generate400response(
                     "Both from_location and to_location cannot be empty.")
                 return response, 400
+
+            if from_location:
+                if not location_exists(from_location):
+                    response = generate400response(
+                        "from_location does not exist.")
+                    return response, 400
+
+            if to_location:
+                if not location_exists(to_location):
+                    response = generate400response(
+                        "to_location does not exist.")
+                    return response, 400
 
             if not product_id:
                 response = generate400response("product_id key required.")
