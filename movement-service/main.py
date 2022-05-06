@@ -140,6 +140,10 @@ class Movements(Resource):
                 response = generate400response("product_id key required.")
                 return response, 400
 
+            if not product_exists(product_id):
+                response = generate400response("product_id does not exist.")
+                return response, 400
+
             if not quantity:
                 response = generate400response(
                     "quantity key required/ quantity cannot be zero.")
