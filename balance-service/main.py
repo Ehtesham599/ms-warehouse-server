@@ -61,8 +61,8 @@ class Balance(Resource):
         try:
             data = request.json()
 
-            product_id = data['product']
-            location_id = data['location']
+            product_id = data['product_id']
+            location_id = data['location_id']
             qty = data['qty']
 
             if not product_id:
@@ -89,6 +89,103 @@ class Balance(Resource):
                        "message": "Success",
                        "timestamp": getISOtimestamp()
                    }, 201
+
+        except Exception as error:
+            res = generate500response(str(error))
+            return res, 500
+
+    def put(self):
+        """RESTful PUT method"""
+
+        try:
+            data = request.get_json()
+
+            product_id = data['product_id']
+            location_id = data['location_id']
+            qty = data['qty']
+
+            # Check if location exists in the database
+            if not location_id:
+                response = generate400response(f"location_id key required.")
+                return response, 400
+
+            # Check if location exists in the database
+            if not product_id:
+                response = generate400response(f"product_id key required.")
+                return response, 400
+
+            if not qty:
+                response = generate400response(f"qty key required.")
+                return response, 400
+
+            if int(qty) <= 0:
+                response = generate400response(f"qty cannot be less than or equal to zero.")
+                return response, 400
+
+            # Check if record exists with given product and location id
+            filters = {
+                'product_id': product_id,
+                'location_id': location_id
+            }
+
+            source_record = collection.find_one(filters)
+            if not source_record:
+                response = generate400response(
+                    f"Record with {product_id} and {location_id} does not exist.")
+                return response, 400
+
+            # Replace single document with request body
+            result = collection.replace_one(filters, data)
+
+            if not result.acknowledged:
+                response = generate500response("Database query failed.")
+                return response, 500
+
+            return {
+                "status": 201,
+                "message": "Success",
+                "timestamp": getISOtimestamp(),
+                "result": "Record updated successfully"
+            }, 201
+
+        except Exception as error:
+            response = generate500response(str(error))
+            return response, 500
+
+
+    def delete(self):
+        """RESTful DELETE method"""
+        try:
+            data = request.json()
+
+            product_id = data['product_id']
+            location_id = data['location_id']
+
+            if not product_id:
+                res = generate400response("product_id key required")
+                return res, 400
+
+            if not location_id:
+                res = generate400response("location_id key required")
+                return res, 400
+
+            filters = {
+                'product_id': product_id,
+                'location_id': location_id
+            }
+
+            result = collection.delete_one(filters)
+
+            if not result.acknowledged:
+                response = generate500response("Database query failed.")
+                return response, 500
+
+            return {
+                       "status": 204,
+                       "message": "Success",
+                       "timestamp": getISOtimestamp(),
+                       "result": "Resource deleted successfully."
+                   }, 204
 
         except Exception as error:
             res = generate500response(str(error))
