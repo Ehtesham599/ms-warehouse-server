@@ -21,13 +21,6 @@ services:
     ports:
       - "8002:8080"
 
-  movement-service:
-    build: ./movement-service
-    volumes:
-      - ./movement-service:/usr/src/app
-    ports:
-      - "8003:8080"
-
   rabbitmq:
     image: 'rabbitmq:3.6-management-alpine'
     ports:
@@ -35,3 +28,31 @@ services:
       - '5672:5672'
       # HTTP management UI
       - '15672:15672'
+
+    networks:
+      - network
+
+  movement-service:
+    build: ./movement-service
+    volumes:
+      - ./movement-service:/usr/src/app
+    ports:
+      - "8003:8080"
+    depends_on:
+      - rabbitmq
+
+    networks:
+      - network
+
+  movement-log-consumer:
+    build: ./movement-log-consumer
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./movement-log-consumer:/usr/src/app
+
+    networks:
+      - network
+
+networks:
+  network: {}
