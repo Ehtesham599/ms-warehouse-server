@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 
-ENV PORT 8080
+ENV PORT 80
 ENV APPDIR /app
 
 WORKDIR $APPDIR
