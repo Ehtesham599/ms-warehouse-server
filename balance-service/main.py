@@ -59,7 +59,7 @@ class Balance(Resource):
     def post(self):
         """RESTful POST method"""
         try:
-            data = request.json()
+            data = request.get_json()
 
             product_id = data['product_id']
             location_id = data['location_id']
@@ -199,4 +199,4 @@ api.add_resource(Balance, '/')
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    app.run(port=8080, host='0.0.0.0')
+    app.run(port=80, host='0.0.0.0')

@@ -190,4 +190,4 @@ api.add_resource(Locations, '/', '/<string:location_id>')
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    app.run(port=8080, host='0.0.0.0')
+    app.run(port=80, host='0.0.0.0')
