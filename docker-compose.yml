@@ -5,21 +5,30 @@ services:
     volumes:
       - ./balance-service:/usr/src/app
     ports:
-      - "8000:8080"
+      - "8000:80"
+
+    networks:
+      - network
 
   product-service:
     build: ./product-service
     volumes:
       - ./product-service:/usr/src/app
     ports:
-      - "8001:8080"
+      - "8001:80"
+
+    networks:
+      - network
 
   location-service:
     build: ./location-service
     volumes:
       - ./location-service:/usr/src/app
     ports:
-      - "8002:8080"
+      - "8002:80"
+
+    networks:
+      - network
 
   rabbitmq:
     image: 'rabbitmq:3.6-management-alpine'
@@ -37,7 +46,7 @@ services:
     volumes:
       - ./movement-service:/usr/src/app
     ports:
-      - "8003:8080"
+      - "8003:80"
     depends_on:
       - rabbitmq
 
