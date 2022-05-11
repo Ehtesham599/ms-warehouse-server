@@ -1,11 +1,14 @@
-import logging
-from flask_restful import Api, Resource
-from flask import Flask, request
-from datetime import datetime
-from database_connector import collection
 import json
-from bson import json_util, ObjectId
+import logging
+import pickle
+from datetime import datetime
+
 import pika
+from bson import json_util, ObjectId
+from flask import Flask, request
+from flask_restful import Api, Resource
+
+from database_connector import collection
 
 QUEUE_NAME = 'movement_log'
 
@@ -67,7 +70,7 @@ def publish_message(message: dict, queue_name: str) -> None:
 
     channel.queue_declare(queue=queue_name)
 
-    channel.basic_publish(exchange='', routing_key=queue_name, body=message)
+    channel.basic_publish(exchange='', routing_key=queue_name, body=pickle.dumps(message))
     logging.info(f"Sent message to {queue_name} queue.\n Message body: \n{message}")
 
     connection.close()
@@ -182,4 +185,4 @@ api.add_resource(Movements, '/', '/<string:movement_id>')
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    app.run(port=8080, host='0.0.0.0')
+    app.run(port=80, host='0.0.0.0')
