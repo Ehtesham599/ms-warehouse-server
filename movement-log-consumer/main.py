@@ -2,6 +2,7 @@ import logging
 import pika
 import requests
 import time
+import pickle
 from database_connector import *
 
 QUEUE_NAME = 'movement_log'
@@ -17,9 +18,9 @@ def main():
     def callback(ch, method, properties, body):
         logging.info("Received %s" % str(body))
         try:
-            allocate_product(body)
+            allocate_product(pickle.loads(body))
         except Exception as error:
-            logging.exception(str(error))
+            logging.info(str(error))
 
     channel.basic_consume(queue=QUEUE_NAME, on_message_callback=callback, auto_ack=True)
 
@@ -48,7 +49,7 @@ def get_product_qty(product_id: str, location_id: str) -> int:
     }
 
     result_doc = balance_collection.find_one(filters)
-    return int(result_doc.qty)
+    return int(result_doc['qty'])
 
 
 def allocate_product(data: dict) -> None:
@@ -78,7 +79,7 @@ def allocate_product(data: dict) -> None:
                 'qty': final_qty
             }
 
-            res = requests.put(url=BALANCE_SERVICE_URL, data=post_obj)
+            res = requests.put(url=BALANCE_SERVICE_URL, json=post_obj)
             if res.status_code == 201:
                 logging.info("Successfully incremented qty in balance collection.")
             else:
@@ -92,8 +93,7 @@ def allocate_product(data: dict) -> None:
                 'qty': quantity
             }
 
-            res = requests.post(url=BALANCE_SERVICE_URL, data=obj)
-
+            res = requests.post(url=BALANCE_SERVICE_URL, json=obj)
             if res.status_code == 201:
                 logging.info("Successfully created record in balance collection.")
             else:
@@ -113,7 +113,7 @@ def allocate_product(data: dict) -> None:
                     'qty': final_qty
                 }
 
-                res = requests.put(url=BALANCE_SERVICE_URL, data=post_obj)
+                res = requests.put(url=BALANCE_SERVICE_URL, json=post_obj)
                 if res.status_code == 201:
                     logging.info("Successfully decremented qty in balance collection.")
                 else:
@@ -139,7 +139,7 @@ def allocate_product(data: dict) -> None:
                     'location_id': from_location,
                     'qty': from_location_final_qty
                 }
-                decrement_res = requests.put(url=BALANCE_SERVICE_URL, data=decrement_obj)
+                decrement_res = requests.put(url=BALANCE_SERVICE_URL, json=decrement_obj)
 
                 if decrement_res.status_code == 201:
                     logging.info("successfully decremented qty at from_location")
@@ -153,7 +153,7 @@ def allocate_product(data: dict) -> None:
                             'location_id': from_location,
                             'qty': to_location_final_qty
                         }
-                        increment_res = requests.put(url=BALANCE_SERVICE_URL, data=increment_obj)
+                        increment_res = requests.put(url=BALANCE_SERVICE_URL, json=increment_obj)
 
                         if increment_res.status_code == 201:
                             logging.info("Successfully incremented qty at to_location")
@@ -167,7 +167,7 @@ def allocate_product(data: dict) -> None:
                             'location_id': from_location,
                             'qty': quantity
                         }
-                        increment_res = requests.post(url=BALANCE_SERVICE_URL, data=increment_obj)
+                        increment_res = requests.post(url=BALANCE_SERVICE_URL, json=increment_obj)
 
                         if increment_res.status_code == 201:
                             logging.info("Successfully created record in balance collection")
