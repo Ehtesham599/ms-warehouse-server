@@ -139,6 +139,10 @@ class Movements(Resource):
                         "to_location does not exist.")
                     return response, 400
 
+            if from_location and to_location and from_location == to_location:
+                response = generate400response("Both from and to locations cannot be the same.")
+                return response, 400
+
             if not product_id:
                 response = generate400response("product_id key required.")
                 return response, 400
