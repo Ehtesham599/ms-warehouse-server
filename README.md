@@ -90,3 +90,12 @@ If the product is being moved between locations, both `from_location` and `to_lo
 External URL: `localhost:8000`
 #### View product balance
 Product balance in respective warehouses can be viewed by making a `GET` request to the given URL.
+
+## Usage
+Make sure to have Docker installed on your machine. Once docker daemon is up and running, navigate to the root directory of the project and run the following command:
+```
+docker-compose up
+```
+
+This will build and run the services with the configuration specified in the docker-compose.yml file.
+Each service can be accessed externally using `localhost:{PORT}` where PORT is specified under each service.
