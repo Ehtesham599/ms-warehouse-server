@@ -12,7 +12,8 @@ The system uses the following tech stack:
 - Deployment: [Docker](https://www.docker.com/)
 
 ## Design
-![architecture]()
+![architecture](https://user-images.githubusercontent.com/45887110/171874218-090accca-ffc8-463b-9734-90261d5b2f5a.jpg)
+
 
 The system consists of four client facing RESTful services: `balance-service`, `product-service`, `location-service`, `movement-service`.
 
